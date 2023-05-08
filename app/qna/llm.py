@@ -14,8 +14,10 @@ INDEX_NAME = "wiki"
 OPENAI_API_TYPE = os.getenv("OPENAI_API_TYPE", "")
 OPENAI_COMPLETIONS_ENGINE = os.getenv("OPENAI_COMPLETIONS_ENGINE", "text-davinci-003")
 
+LLAMA_CPP_MODEL_PATH  = os.getenv("LLAMA_CPP_MODEL_PATH","")
+
 def get_embeddings():
-    if OPENAI_API_TYPE=="azure":
+    if (OPENAI_API_TYPE=="azure") or (LLAMA_CPP_MODEL_PATH!=""):
         #currently Azure OpenAI embeddings require request for service limit increase to be useful
         #using build-in HuggingFace instead
         from langchain.embeddings import HuggingFaceEmbeddings
@@ -119,7 +121,18 @@ def make_qna_chain():
     return chain
 
 def get_llm():
-    if OPENAI_API_TYPE=="azure":
+    if LLAMA_CPP_MODEL_PATH != "":
+        from langchain.llms import LlamaCpp
+        #from langchain.callbacks.manager import CallbackManager
+        #from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+        #model_path="./ggml-model-q4_0.bin"
+        model_path=LLAMA_CPP_MODEL_PATH 
+        # Callbacks support token-wise streaming
+        #callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
+        llm = LlamaCpp(
+            model_path=model_path, n_ctx=2048, verbose=True
+        )
+    elif OPENAI_API_TYPE=="azure":
         from langchain.llms import AzureOpenAI
         llm=AzureOpenAI(deployment_name=OPENAI_COMPLETIONS_ENGINE)
     else:

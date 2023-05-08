@@ -50,5 +50,20 @@ If using Azure OpenAI - use `.env.azure.template` instead. Besides `OPENAI_API_K
 
 Currently (May 2023) Embedding Generation on Azure OpenAI is limited in batch size and request frequency, that makes it unusable for the purposesof this demo. In a meantime if `OPENAI_API_TYPE=azure` - this demo would load and use HuggingFace `all-MiniLM-L6-v2` for embeddings. You might also request service limit increase for your Azure subscription to address it. 
 
+### Using Llama.cpp with Alpaca model
+
+WARNING! While use of of locally run llama.cpp-based model is possible, it will be extremely slow, comparing to calling out to the hosted OpenAI. 3-5 minutes for producing an answer to a single question on Mac M1.
+
+Llama.cpp can be used without any API key locally. You need to download the model locally from https://huggingface.co/Sosaka/Alpaca-native-4bit-ggml/blob/main/ggml-alpaca-7b-q4.bin and expose it in the local file system. For example:
+```
+LLAMA_CPP_MODEL_PATH=/models/ggml-alpaca-7b-q4.bin
+```
+Now mount the file in the docker container:
+```
+  docker run -it -p 80:80 \
+    --env-file=.env.llama_cpp.template \
+    -v "${PWD}/models":/models \
+    redis-openai-qna
+    
 
 **NOW: Ask the app anything about the 2020 Summer Olympics!**
